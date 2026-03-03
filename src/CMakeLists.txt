@@ -3,6 +3,8 @@ add_library(qengine
         monte_carlo.cpp
         payoff.cpp
         main.cpp
+        Analytics.cpp
+        Analytics.hpp
 )
 
 target_include_directories(qengine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

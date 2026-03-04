@@ -1,10 +1,10 @@
 add_library(qengine
-        black_scholes.cpp
-        monte_carlo.cpp
-        payoff.cpp
+        models/black_scholes.cpp
+        simulation/monte_carlo.cpp
+        models/payoff.cpp
         main.cpp
-        Analytics.cpp
-        Analytics.hpp
+        calibration/Stats.cpp
+        calibration/Stats.hpp
 )
 
 target_include_directories(qengine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -2,9 +2,9 @@
 // Created by David Doebel  on 03.03.2026.
 //
 
-#include "black_scholes.hpp"
-#include "monte_carlo.hpp"
-#include "payoff.hpp"
+#include "models/black_scholes.hpp"
+#include "simulation/monte_carlo.hpp"
+#include "models/payoff.hpp"
 #include <iostream>
 
 int main() {

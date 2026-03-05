@@ -6,20 +6,22 @@
 #define OPTION_PRICING_BLACK_SCHOLES_HPP
 
 #include <cmath>
+#include "Model.hpp"
 
-class BlackScholes {
+class BlackScholes : public Model{
 public:
     BlackScholes(double S0, double r, double sigma, double T)
-        : S0_(S0), r_(r), sigma_(sigma), T_(T) {}
+        : Model(), S0_(S0), r_(r), sigma_(sigma), T_(T) {
+    }
 
-    double terminal_price(double Z) const {
+    [[nodiscard]] double terminal_price(double Z) const override{
         return S0_ * std::exp(
             (r_ - 0.5 * sigma_ * sigma_) * T_
             + sigma_ * std::sqrt(T_) * Z
         );
     }
 
-    double discount() const {
+    [[nodiscard]] double discount() const override{
         return std::exp(-r_ * T_);
     }
 

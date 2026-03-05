@@ -10,12 +10,14 @@
 class Stats {
 private:
     size_t n_ = 0;
-    double mean_ = 0.0;
-    double M2 = 0.0;
+    double running_sum_ = 0.0;
+    double running_square_sum_ = 0.0;
 
 public:
     Stats() = delete;
     void update(double x);
+    double mean() const;
+    double square_mean() const;
     double variance() const;
     double std_error() const;
     std::pair<double, double> CI() const; // alpha = 5%

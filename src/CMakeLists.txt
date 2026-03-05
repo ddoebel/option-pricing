@@ -5,6 +5,8 @@ add_library(qengine
         main.cpp
         calibration/Stats.cpp
         calibration/Stats.hpp
+        models/Model.cpp
+        models/Model.hpp
 )
 
 target_include_directories(qengine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

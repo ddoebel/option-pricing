@@ -6,18 +6,25 @@
 #include <cmath>
 
 void Stats::update(double x) {
-    // update the mean according to the formula
-    // \hat{a}_n \cdot \frac{n}{n+1} + \frac{a_{n+1}}{n+1}
-    double n_ratio = n_ / ++n_ ;
-    mean_ = n_ratio * mean_ + x/n_;
-    // update the second moment
-    M2 = n_ratio * M2 + x * x / n_;
-    // update the
+    running_sum_ += x;
+    running_square_sum_ += x * x;
+    n_++;
 
 }
 
+double Stats::mean() const {
+    return running_sum_ / n_;
+}
+
+double Stats::square_mean() const {
+    return running_square_sum_ / n_;
+}
+
 double Stats::variance() const {
-    return M2 - mean_ * mean_;
+    double mean = this->mean();
+    double square_mean = this->square_mean();
+    return square_mean * square_mean - mean * mean;
+
 }
 
 double Stats::std_error() const {
@@ -25,5 +32,5 @@ double Stats::std_error() const {
 }
 
 std::pair<double, double> Stats::CI() const {
-    return std::make_pair(mean_ - 1.96 * std_error(), mean_ + 1.96 * std_error());
+    return std::make_pair(running_sum_ - 1.96 * std_error(), running_sum_ + 1.96 * std_error());
 }

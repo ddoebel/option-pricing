@@ -1,12 +1,32 @@
 add_library(qengine
-        models/black_scholes.cpp
-        simulation/monte_carlo.cpp
-        models/payoff.cpp
-        main.cpp
-        calibration/Stats.cpp
-        calibration/Stats.hpp
-        models/Model.cpp
-        models/Model.hpp
+        Instrument.cpp
+        Instrument.hpp
+        Payoff.cpp
+        Payoff.hpp
+        Option.cpp
+        Option.hpp
+        PricingEngine.cpp
+        PricingEngine.hpp
+        MonteCarloEngine.cpp
+        MonteCarloEngine.hpp
+        StochasticProcess.cpp
+        StochasticProcess.hpp
+        Exercise.cpp
+        Exercise.hpp
+        MarketData.cpp
+        MarketData.hpp
+        YieldCurve.cpp
+        YieldCurve.hpp
+        VolatilitySurface.cpp
+        VolatilitySurface.hpp
+        RandomGenerator.cpp
+        RandomGenerator.hpp
+        Statistics.cpp
+        Statistics.hpp
+        BlackScholesProcess.cpp
+        BlackScholesProcess.hpp
+
+
 )
 
 target_include_directories(qengine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

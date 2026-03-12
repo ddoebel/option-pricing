@@ -62,7 +62,7 @@ def get_or_create_underlying(conn, symbol: str) -> int:
     })
 
     result = conn.execute(query_select, {"symbol": symbol}).fetchone()
-    return result[0]
+    return result[0] #h
 
 
 def get_or_create_contract(

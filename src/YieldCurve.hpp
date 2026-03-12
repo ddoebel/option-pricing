@@ -28,8 +28,8 @@ public:
         return *this;
     }
     virtual ~YieldCurve() = default;
-    virtual double discount(double t) = 0;
-    virtual double zeroRate(double t) = 0;
+    virtual double discount(double t) const = 0;
+    virtual double zeroRate(double t) const = 0;
 
 };
 

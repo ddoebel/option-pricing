@@ -10,23 +10,23 @@
 
 class MarketData {
 public:
-    MarketData() = default;
+    MarketData() = delete;
 
-    MarketData(double spot, std::unique_ptr<YieldCurve> yield_curve,
-         std::unique_ptr<VolatilitySurface> volatility_surface)
+    MarketData(double spot, std::shared_ptr<const YieldCurve> yield_curve,
+         std::shared_ptr<const VolatilitySurface> volatility_surface)
         : spot_(spot),
           yield_curve_(std::move(yield_curve)),
           volatility_surface_(std::move(volatility_surface)) {
     }
 
     double spot() const;
-    YieldCurve& yield_curve();
-    VolatilitySurface& volatility_surface();
+    const YieldCurve& yield_curve() const;
+    const VolatilitySurface& volatility_surface() const;
 
 private:
     double spot_;
-    std::unique_ptr<YieldCurve> yield_curve_;
-    std::unique_ptr<VolatilitySurface> volatility_surface_;
+    std::shared_ptr<const YieldCurve> yield_curve_;
+    std::shared_ptr<const VolatilitySurface> volatility_surface_;
 };
 
 

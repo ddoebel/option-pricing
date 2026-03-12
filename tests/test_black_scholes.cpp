@@ -11,7 +11,6 @@
 
 #include "stubs/FlatYieldCurve.hpp"
 #include "stubs/FlatVolatilitySurface.hpp"
-#include "stubs/FakeMarketData.hpp"
 
 TEST(BlackScholesProcess, ExpectedValue) {
     // Market setup (via test stubs): S0=100, r=1%, sigma=20%
@@ -19,9 +18,14 @@ TEST(BlackScholesProcess, ExpectedValue) {
     const double T = 1.0;
     const int numPaths = 300000; // enough for stable MC estimate
 
-    // Build Black-Scholes process with fake flat market data
-    auto processCall = std::make_unique<BlackScholesProcess>(std::make_unique<FakeMarketData>());
-    auto processPut  = std::make_unique<BlackScholesProcess>(std::make_unique<FakeMarketData>());
+    const MarketData marketData(
+        100.0,
+        std::make_shared<FlatYieldCurve>(0.01),
+        std::make_shared<FlatVolatilitySurface>(0.2));
+
+    // Build Black-Scholes process from an immutable market snapshot
+    auto processCall = std::make_unique<BlackScholesProcess>(marketData);
+    auto processPut  = std::make_unique<BlackScholesProcess>(marketData);
 
     // RNG shared between engines is fine
     auto rng = std::make_shared<MersenneTwister>();
@@ -38,8 +42,8 @@ TEST(BlackScholesProcess, ExpectedValue) {
     const double putPrice  = putInstr.price();
 
     // Ground truth Black–Scholes prices provided
-    const double callGT = 10.450583572;
-    const double putGT  = 5.573526022;
+    const double callGT = 8.4333186901;
+    const double putGT  = 7.4383020650;
 
     // Monte Carlo tolerance
     const double tol = 0.10; // 10 cents tolerance

@@ -9,7 +9,7 @@
 
 class Statistics {
 public:
-    Statistics() : moments_({0., 0., 0.}), max_(0.), min_(0.) {}
+    Statistics() : moments_({0., 0., 0.}), n(0), max_(0.), min_(0.) {}
     void dump(double value);
     void clear();
     double mean();

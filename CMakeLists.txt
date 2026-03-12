@@ -24,8 +24,7 @@ FetchContent_MakeAvailable(googletest)
 add_executable(qengine_tests
         tests/test_black_scholes.cpp
         tests/stubs/FlatYieldCurve.cpp
-        tests/stubs/FlatVolatilitySurface.cpp
-        tests/stubs/FakeMarketData.cpp)
+        tests/stubs/FlatVolatilitySurface.cpp)
 
 target_link_libraries(qengine_tests qengine GTest::gtest_main)
 include(GoogleTest)

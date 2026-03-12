@@ -9,8 +9,7 @@
 
 class BlackScholesProcess : public StochasticProcess{
 public:
-    BlackScholesProcess() = default;
-    BlackScholesProcess(std::unique_ptr<MarketData> data) : StochasticProcess(std::move(data)){}
+    explicit BlackScholesProcess(MarketData data) : StochasticProcess(std::move(data)){}
 
     double drift(double t, double s) override;
 

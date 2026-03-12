@@ -6,6 +6,12 @@
 #include "VolatilitySurface.hpp"
 
 class FlatVolatilitySurface : public VolatilitySurface {
-    double sigma(double K, double T) {return 0.2;}
+public:
+    explicit FlatVolatilitySurface(double sigma = 0.2) : sigma_(sigma) {}
+
+    double sigma(double K, double T) const override {return sigma_;}
+
+private:
+    double sigma_;
 };
 #endif

@@ -9,7 +9,7 @@
 class VolatilitySurface {
 public:
     virtual ~VolatilitySurface() = default;
-    virtual double sigma(double K, double T) = 0;
+    virtual double sigma(double K, double T) const = 0;
 private:
 
 };

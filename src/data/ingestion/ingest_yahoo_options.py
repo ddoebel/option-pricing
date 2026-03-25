@@ -113,15 +113,15 @@ def get_or_create_contract(
     return result[0]
 
 
-def insert_underlying_price(conn, underlying_id: int, price_timestamp: datetime, price: float):
+def insert_underlying_price(conn, underlying_id: int, timestamp: datetime, price: float):
     query = text("""
-                 INSERT INTO underlying_prices (underlying_id, price_timestamp, price)
-                 VALUES (:underlying_id, :price_timestamp, :price)
-                     ON CONFLICT (underlying_id, price_timestamp) DO NOTHING
+                 INSERT INTO underlying_prices (underlying_id, timestamp, price)
+                 VALUES (:underlying_id, :timestamp, :price)
+                     ON CONFLICT (underlying_id, timestamp) DO NOTHING
                  """)
     conn.execute(query, {
         "underlying_id": underlying_id,
-        "price_timestamp": price_timestamp,
+        "timestamp": timestamp,
         "price": price,
     })
 
@@ -129,7 +129,7 @@ def insert_underlying_price(conn, underlying_id: int, price_timestamp: datetime,
 def insert_option_quote(
         conn,
         contract_id: int,
-        quote_timestamp: datetime,
+        timestamp: datetime,
         bid,
         ask,
         mid,
@@ -140,19 +140,19 @@ def insert_option_quote(
 ):
     query = text("""
                  INSERT INTO option_quotes (
-                     contract_id, quote_timestamp, bid, ask, mid,
+                     contract_id, timestamp, bid, ask, mid,
                      last_price, implied_vol, volume, open_interest
                  )
                  VALUES (
-                            :contract_id, :quote_timestamp, :bid, :ask, :mid,
+                            :contract_id, :timestamp, :bid, :ask, :mid,
                             :last_price, :implied_vol, :volume, :open_interest
                         )
-                     ON CONFLICT (contract_id, quote_timestamp) DO NOTHING
+                     ON CONFLICT (contract_id, timestamp) DO NOTHING
                  """)
 
     conn.execute(query, {
         "contract_id": contract_id,
-        "quote_timestamp": quote_timestamp,
+        "timestamp": timestamp,
         "bid": bid,
         "ask": ask,
         "mid": mid,
@@ -163,7 +163,7 @@ def insert_option_quote(
     })
 
 
-def process_option_dataframe(conn, df: pd.DataFrame, underlying_id: int, option_type: str, symbol: str, expiration_date, quote_timestamp: datetime):
+def process_option_dataframe(conn, df: pd.DataFrame, underlying_id: int, option_type: str, symbol: str, expiration_date, timestamp: datetime):
     style = infer_option_style(symbol)
 
     for _, row in df.iterrows():
@@ -194,7 +194,7 @@ def process_option_dataframe(conn, df: pd.DataFrame, underlying_id: int, option_
         insert_option_quote(
             conn=conn,
             contract_id=contract_id,
-            quote_timestamp=quote_timestamp,
+            timestamp=timestamp,
             bid=bid,
             ask=ask,
             mid=mid,
@@ -215,7 +215,7 @@ def ingest_symbol(symbol: str, engine):
         print(f"No options found for {symbol}")
         return
 
-    quote_timestamp = datetime.now(timezone.utc)
+    timestamp = datetime.now(timezone.utc)
 
     # Try to get spot price
     info = {}
@@ -235,7 +235,7 @@ def ingest_symbol(symbol: str, engine):
             insert_underlying_price(
                 conn=conn,
                 underlying_id=underlying_id,
-                price_timestamp=quote_timestamp,
+                timestamp=timestamp,
                 price=float(spot_price),
             )
 
@@ -252,7 +252,7 @@ def ingest_symbol(symbol: str, engine):
                 option_type="call",
                 symbol=symbol,
                 expiration_date=expiration_date,
-                quote_timestamp=quote_timestamp,
+                timestamp=timestamp,
             )
 
             process_option_dataframe(
@@ -262,7 +262,7 @@ def ingest_symbol(symbol: str, engine):
                 option_type="put",
                 symbol=symbol,
                 expiration_date=expiration_date,
-                quote_timestamp=quote_timestamp,
+                timestamp=timestamp,
             )
 
     print(f"Finished ingestion for {symbol}.")

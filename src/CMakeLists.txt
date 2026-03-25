@@ -25,9 +25,17 @@ add_library(qengine
         Statistics.hpp
         BlackScholesProcess.cpp
         BlackScholesProcess.hpp
+        DBIngest.cpp
+        DBIngest.hpp
+        GaussSolver.cpp
+        GaussSolver.hpp
 
 
 )
 
 target_include_directories(qengine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(qengine PRIVATE
+        /opt/homebrew/include
+)
 target_link_libraries(qengine Eigen3::Eigen)
+target_link_libraries(qengine pqxx pq)

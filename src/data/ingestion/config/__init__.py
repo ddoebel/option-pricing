@@ -1,3 +1,3 @@
-from .settings import DB_CONFIG, PIPELINE_CONFIG
+from .settings import PIPELINE_CONFIG, get_db_config
 
-__all__ = ["DB_CONFIG", "PIPELINE_CONFIG"]
+__all__ = ["get_db_config", "PIPELINE_CONFIG"]

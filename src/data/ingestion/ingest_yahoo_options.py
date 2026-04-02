@@ -4,14 +4,15 @@ import pandas as pd
 import yfinance as yf
 from sqlalchemy import text
 
-from option_pricing.src.data.ingestion.config import DB_CONFIG, PIPELINE_CONFIG
+from option_pricing.src.data.ingestion.config import PIPELINE_CONFIG, get_db_config
 from db_connect import db_engine
 
 
 def build_db_url() -> str:
+    cfg = get_db_config()
     return (
-        f"postgresql+psycopg2://{DB_CONFIG['user']}:{DB_CONFIG['password']}"
-        f"@{DB_CONFIG['host']}:{DB_CONFIG['port']}/{DB_CONFIG['database']}"
+        f"postgresql+psycopg2://{cfg['user']}:{cfg['password']}"
+        f"@{cfg['host']}:{cfg['port']}/{cfg['database']}"
     )
 
 

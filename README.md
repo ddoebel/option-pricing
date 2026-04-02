@@ -124,14 +124,22 @@ pip install pandas yfinance sqlalchemy psycopg2-binary matplotlib scipy
 cp .env.example .env
 ```
 
-Then edit `.env` with your local database credentials.
+Then edit `.env` with your local database credentials (`DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, etc.).
+
+Shell `VAR=value` lines are **not** exported to child processes by default. Load them into the environment for Python with:
+
+```bash
+set -a && source .env && set +a
+```
+
+Database settings are read when each connection is created, so this must succeed **before** you run `python …` (or use `export` on each line you care about).
 
 ### 3) Create database and schema
 
 Use the idempotent setup script:
 
 ```bash
-source .env
+set -a && source .env && set +a
 python scripts/setup_postgres.py
 ```
 
@@ -151,11 +159,20 @@ ctest --test-dir build --output-on-failure
 ### 5) Run Yahoo options ingestion
 
 ```bash
-source .env
+set -a && source .env && set +a
 python src/data/ingestion/ingest_yahoo_options.py
 ```
 
 `PIPELINE_SYMBOLS` in `.env` controls which symbols are ingested (comma-separated, e.g. `SPY,AAPL,QQQ`).
+
+### 6) Run the DB → calibration demo (`load_data`)
+
+From the parent directory of the `option_pricing` folder (so `import option_pricing` resolves), with `.env` exported as above:
+
+```bash
+set -a && source option_pricing/.env && set +a
+python3 -m option_pricing.src.data.load_data
+```
 
 ## Generating C++ API docs
 

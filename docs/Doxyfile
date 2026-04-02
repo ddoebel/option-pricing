@@ -1,0 +1,50 @@
+# Doxygen configuration for QuantEngine (option_pricing).
+# Run from repo root: doxygen docs/Doxyfile
+# Or: cmake --build build --target docs
+
+PROJECT_NAME           = QuantEngine
+PROJECT_BRIEF          = "Monte Carlo option pricing, market data abstractions, and Python bindings"
+
+OUTPUT_DIRECTORY       = docs/html
+CREATE_SUBDIRS         = NO
+ALLOW_UNICODE_NAMES    = YES
+
+JAVADOC_AUTOBRIEF      = YES
+QT_AUTOBRIEF           = NO
+OPTIMIZE_OUTPUT_FOR_CPLUSPLUS = YES
+
+FULL_PATH_NAMES        = YES
+STRIP_FROM_PATH        =
+
+QUIET                  = NO
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
+WARN_NO_PARAMDOC       = NO
+
+INPUT                  = cpp
+INPUT_ENCODING         = UTF-8
+FILE_PATTERNS          = *.cpp *.hpp *.h
+RECURSIVE              = YES
+
+EXCLUDE_PATTERNS       =
+EXCLUDE_SYMBOLS        =
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = .
+HTML_COLORSTYLE_HUE    = 220
+GENERATE_LATEX         = NO
+
+SEARCHENGINE           = YES
+
+SOURCE_BROWSER         = YES
+REFERENCED_BY_RELATION = YES
+REFERENCES_RELATION    = YES
+
+ALPHABETICAL_INDEX     = YES
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = NO
+
+CLASS_DIAGRAMS         = YES
+HAVE_DOT               = NO
+
+PREDEFINED             = DOXYGEN

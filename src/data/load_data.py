@@ -105,20 +105,30 @@ def compute_iv(option_quotes_contracts, underlying_prices):
 
 def fit_ivsimle(option_quotes_contracts):
     from scipy.interpolate import UnivariateSpline
+
     sort = option_quotes_contracts.sort_values("log_moneyness").dropna()
     x = sort["log_moneyness"]
     y = sort["iv"]
     y_yahoo = sort["implied_vol"]
-    print(x,y,y_yahoo)
+    print(f"fit_ivsimle: fitting splines on {len(sort)} quotes (log-moneyness range [{x.min():.4f}, {x.max():.4f}]).")
     f = UnivariateSpline(x, y, s=None)
     f_yahoo = UnivariateSpline(x, y_yahoo, s=None)
-    # plot the smile
     x_lin = np.linspace(x.min(), x.max(), 200)
-    plt.plot(x_lin, f(x_lin), label="iv smile")
-    plt.plot(x_lin, f_yahoo(x_lin), label="yahoo iv smile")
-    plt.legend()
-    plt.savefig("iv_smile_fit.pdf")
 
+    fig, ax = plt.subplots(figsize=(9, 5.5))
+    ax.plot(x_lin, f(x_lin), lw=2.0, label="Spline on inverted IV (qengine + Brent)")
+    ax.plot(x_lin, f_yahoo(x_lin), lw=2.0, ls="--", label="Spline on Yahoo-reported IV")
+    ax.set_xlabel(r"Log-moneyness $\log(K/F)$")
+    ax.set_ylabel("Implied volatility")
+    ax.set_title(
+        "Nonparametric smile comparison: inverted IV vs provider IV\n"
+        "(same strike/expiry sample as pipeline, filtered |log moneyness| < 0.2 in prior step)"
+    )
+    ax.grid(alpha=0.3)
+    ax.legend(loc="best", framealpha=0.95)
+    fig.tight_layout()
+    fig.savefig("iv_smile_fit.pdf", bbox_inches="tight")
+    plt.close(fig)
 
     return f
 
@@ -175,7 +185,7 @@ def plot_smoothed_svi_surface(prep: pd.DataFrame, params: pd.DataFrame, r: float
         180,
     )
 
-    plt.figure(figsize=(11, 7))
+    fig, ax = plt.subplots(figsize=(11, 7))
     cmap = plt.colormaps["viridis"]
     nT = max(len(T_grid), 1)
     for i, Ti in enumerate(T_grid):
@@ -184,37 +194,44 @@ def plot_smoothed_svi_surface(prep: pd.DataFrame, params: pd.DataFrame, r: float
         sub = plot_df.loc[near]
         if sub.empty:
             continue
-        # market IV points
         iv_mkt = np.sqrt(
             np.maximum(sub["total_var"].to_numpy(dtype=np.float64), 0.0)
             / np.maximum(Ti, 1e-12)
         )
-        plt.scatter(
+        ax.scatter(
             sub["log_moneyness"].to_numpy(dtype=np.float64),
             iv_mkt,
-            s=10,
-            alpha=0.35,
+            s=12,
+            alpha=0.4,
             color=color,
+            edgecolors="none",
         )
-        # smoothed curve IV
         w_model = curves.total_var(k_grid, np.array([Ti], dtype=np.float64))[0]
         iv_model = np.sqrt(np.maximum(w_model, 0.0) / np.maximum(Ti, 1e-12))
-        plt.plot(k_grid, iv_model, color=color, lw=2, label=f"T={Ti:.3f}")
+        ax.plot(k_grid, iv_model, color=color, lw=2.2, label=f"Smoothed SVI slice T={Ti:.3f}")
 
-    plt.xlabel("log moneyness log(K/F)")
-    plt.ylabel("implied vol")
-    plt.title("SVI surface: market points vs smoothed maturity curves")
-    plt.grid(alpha=0.3)
-    plt.legend(fontsize=8, ncol=2)
-    plt.tight_layout()
-    plt.savefig("svi_smoothed_surface.pdf", bbox_inches="tight")
-    plt.clf()
+    ax.set_xlabel(r"Log-moneyness $\log(K/F)$", fontsize=11)
+    ax.set_ylabel("Implied volatility", fontsize=11)
+    ax.set_title(
+        "SVI surface after maturity smoothing\n"
+        "Scatter: observed total variance converted to IV; lines: smoothed-parameter SVI slices",
+        fontsize=12,
+    )
+    ax.grid(alpha=0.3)
+    ax.legend(
+        fontsize=8,
+        ncol=2,
+        loc="upper right",
+        framealpha=0.95,
+        title="Smoothed SVI slices (lines); scatter = market IV",
+    )
+    fig.tight_layout()
+    fig.savefig("svi_smoothed_surface.pdf", bbox_inches="tight")
+    plt.close(fig)
 
-    # Calendar diagnostics from smoothed surface
     cal_diff = calendar_violation_matrix(curves, T_grid, k_grid)
-    # diff shape: (len(T_grid)-1, len(k_grid)) where negative is violation
-    plt.figure(figsize=(11, 4))
-    im = plt.imshow(
+    fig2, ax2 = plt.subplots(figsize=(11, 4.5))
+    im = ax2.imshow(
         cal_diff,
         aspect="auto",
         origin="lower",
@@ -223,13 +240,18 @@ def plot_smoothed_svi_surface(prep: pd.DataFrame, params: pd.DataFrame, r: float
         vmax=0.02,
         extent=[k_grid.min(), k_grid.max(), 0, cal_diff.shape[0]],
     )
-    plt.colorbar(im, label="w(T_{j+1},k)-w(T_j,k)")
-    plt.xlabel("log moneyness")
-    plt.ylabel("maturity step j")
-    plt.title("Calendar diagnostic heatmap (negative = violation)")
-    plt.tight_layout()
-    plt.savefig("svi_calendar_violation_heatmap.pdf", bbox_inches="tight")
-    plt.clf()
+    cbar = fig2.colorbar(im, ax=ax2)
+    cbar.set_label(r"$\Delta w$ = $w(T_{j+1},k) - w(T_j,k)$  (total variance)", fontsize=10)
+    ax2.set_xlabel(r"Log-moneyness $\log(K/F)$", fontsize=11)
+    ax2.set_ylabel(r"Maturity step index $j$ (pair $T_j \to T_{j+1}$)", fontsize=11)
+    ax2.set_title(
+        "Calendar spread diagnostic on smoothed surface\n"
+        "(negative values indicate potential calendar arbitrage in $w$)",
+        fontsize=12,
+    )
+    fig2.tight_layout()
+    fig2.savefig("svi_calendar_violation_heatmap.pdf", bbox_inches="tight")
+    plt.close(fig2)
 
 
 def _fit_slice_with_svi_py_model(
@@ -372,9 +394,13 @@ def compare_vs_svi_py(prep: pd.DataFrame, params: pd.DataFrame):
             plt.close()
             continue
 
-        plt.xlabel("log moneyness")
-        plt.ylabel("implied vol")
-        plt.title(f"In-house SVI (solid) vs pysvi {model_name} (dashed)")
+        plt.xlabel(r"Log-moneyness $\log(K/F)$", fontsize=11)
+        plt.ylabel("Implied volatility", fontsize=11)
+        plt.title(
+            f"Slice-wise implied vol: in-house SVI (solid) vs pysvi '{model_name}' (dashed)\n"
+            "Each color is a different expiry; dashed uses no-arbitrage-constrained pysvi calibration.",
+            fontsize=12,
+        )
         plt.grid(alpha=0.3)
         plt.tight_layout()
         plt.savefig(f"svi_vs_pysvi_{model_name}_comparison.pdf", bbox_inches="tight")
@@ -395,14 +421,36 @@ def plot_ivsmile(option_quotes_contracts):
         option_quotes_contracts["spot"] * np.exp(0.05 * option_quotes_contracts["T"])/option_quotes_contracts["strike"]
     )
     option_quotes_contracts = option_quotes_contracts[option_quotes_contracts["log_moneyness"].abs() < 0.2]
-    #option_quotes_contracts = option_quotes_contracts[option_quotes_contracts["mid"] > 0.2]
-    plt.plot(option_quotes_contracts["strike"], option_quotes_contracts["iv"], label="iv smile")
-    plt.plot(option_quotes_contracts["strike"], option_quotes_contracts["implied_vol"], label="i. vol")
-    plt.legend()
-    plt.savefig("iv_smile.pdf")
-    plt.xlabel("iv")
-    plt.ylabel("strike price")
-    plt.clf()
+
+    fig, ax = plt.subplots(figsize=(9, 5.5))
+    ax.plot(
+        option_quotes_contracts["strike"],
+        option_quotes_contracts["iv"],
+        ".",
+        alpha=0.35,
+        markersize=4,
+        label="Inverted IV (Black–Scholes, r = 5%, mid price)",
+    )
+    ax.plot(
+        option_quotes_contracts["strike"],
+        option_quotes_contracts["implied_vol"],
+        ".",
+        alpha=0.35,
+        markersize=4,
+        label="Yahoo-reported implied volatility",
+    )
+    ax.set_xlabel("Strike price", fontsize=11)
+    ax.set_ylabel("Implied volatility", fontsize=11)
+    ax.set_title(
+        "Volatility smile near the money\n"
+        r"(filter: $\left|\log(K/F)\right| < 0.2$ on forward $F = S e^{rT}$)",
+        fontsize=12,
+    )
+    ax.grid(alpha=0.3)
+    ax.legend(loc="best", framealpha=0.95)
+    fig.tight_layout()
+    fig.savefig("iv_smile.pdf", bbox_inches="tight")
+    plt.close(fig)
     return option_quotes_contracts
 
 

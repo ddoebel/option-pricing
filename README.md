@@ -1,4 +1,5 @@
 # Option Pricing Engine with Market Data Pipeline 
+👉 [Project blog](https://notes.ddoebel.de/public-folder/Option-Pricing-Engine)
 ## 📌 Project Description
 
 This repository implements a **production-style quantitative valuation pipeline** for equity options, combining high-performance pricing models with a full data and calibration workflow.

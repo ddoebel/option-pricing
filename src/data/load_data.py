@@ -1,9 +1,47 @@
+from __future__ import annotations
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
 from option_pricing.src.data.ingestion.db_connect import db_engine
 from option_pricing.src.ImpliedVolatility.compute_vls import implied_vol
+
+
+def _save_figure_pdf_png(fig: plt.Figure, stem: str, *, dpi: int = 200) -> None:
+    """Write ``{stem}.pdf`` and ``{stem}.png`` (PNG for README / web)."""
+    fig.savefig(f"{stem}.pdf", bbox_inches="tight")
+    fig.savefig(f"{stem}.png", bbox_inches="tight", dpi=dpi)
+
+
+def _snapshot_at_quote_time(
+    df: pd.DataFrame,
+    *,
+    quote_timestamp: pd.Timestamp | str | None = None,
+) -> tuple[pd.DataFrame, pd.Timestamp]:
+    """
+    Keep rows from a single option quote snapshot so smiles are not stacked
+    from multiple ingestion times.
+
+    Default: latest ``timestamp`` in the frame.
+    """
+    if "timestamp" not in df.columns:
+        raise KeyError("Expected column 'timestamp' (quote time); merge quotes before plotting.")
+    out = df.copy()
+    out["timestamp"] = pd.to_datetime(out["timestamp"], errors="coerce")
+    if quote_timestamp is None:
+        ts = out["timestamp"].max()
+    else:
+        ts = pd.to_datetime(quote_timestamp)
+    if pd.isna(ts):
+        raise ValueError("Could not resolve quote timestamp for IV smile snapshot.")
+    mask = out["timestamp"] == ts
+    if not mask.any():
+        raise ValueError(
+            f"No rows at quote_timestamp={ts}. Sample of distinct timestamps: "
+            f"{out['timestamp'].dropna().unique()[:5]}"
+        )
+    return out.loc[mask].copy(), ts
 
 
 def _normalize_quote_timestamp(df: pd.DataFrame) -> pd.DataFrame:
@@ -122,12 +160,12 @@ def fit_ivsimle(option_quotes_contracts):
     ax.set_ylabel("Implied volatility")
     ax.set_title(
         "Nonparametric smile comparison: inverted IV vs provider IV\n"
-        "(same strike/expiry sample as pipeline, filtered |log moneyness| < 0.2 in prior step)"
+        "(one quote snapshot; |log moneyness| < 0.2 after plot_ivsmile filter)"
     )
     ax.grid(alpha=0.3)
     ax.legend(loc="best", framealpha=0.95)
     fig.tight_layout()
-    fig.savefig("iv_smile_fit.pdf", bbox_inches="tight")
+    _save_figure_pdf_png(fig, "iv_smile_fit")
     plt.close(fig)
 
     return f
@@ -152,8 +190,8 @@ def plot_smoothed_svi_surface(prep: pd.DataFrame, params: pd.DataFrame, r: float
     Plot independent slice fits after maturity smoothing.
 
     Outputs:
-    - svi_smoothed_surface.pdf
-    - svi_calendar_violation_heatmap.pdf
+    - svi_smoothed_surface.pdf / .png
+    - svi_calendar_violation_heatmap.pdf / .png
     """
     from option_pricing.src.ImpliedVolatility.svi import (
         calendar_violation_matrix,
@@ -226,7 +264,7 @@ def plot_smoothed_svi_surface(prep: pd.DataFrame, params: pd.DataFrame, r: float
         title="Smoothed SVI slices (lines); scatter = market IV",
     )
     fig.tight_layout()
-    fig.savefig("svi_smoothed_surface.pdf", bbox_inches="tight")
+    _save_figure_pdf_png(fig, "svi_smoothed_surface")
     plt.close(fig)
 
     cal_diff = calendar_violation_matrix(curves, T_grid, k_grid)
@@ -250,7 +288,7 @@ def plot_smoothed_svi_surface(prep: pd.DataFrame, params: pd.DataFrame, r: float
         fontsize=12,
     )
     fig2.tight_layout()
-    fig2.savefig("svi_calendar_violation_heatmap.pdf", bbox_inches="tight")
+    _save_figure_pdf_png(fig2, "svi_calendar_violation_heatmap")
     plt.close(fig2)
 
 
@@ -302,7 +340,7 @@ def compare_vs_svi_py(prep: pd.DataFrame, params: pd.DataFrame):
     Compare in-house SVI fit against pysvi models with explicit no-arbitrage flags.
 
     Outputs:
-    - svi_vs_pysvi_<model>_comparison.pdf for model in {svi, ssvi, essvi, jumpwings}
+    - svi_vs_pysvi_<model>_comparison.pdf and .png for model in {svi, ssvi, essvi, jumpwings}
     - svi_vs_pysvi_metrics.csv
     """
     from option_pricing.src.ImpliedVolatility.svi import SVIParams
@@ -403,8 +441,8 @@ def compare_vs_svi_py(prep: pd.DataFrame, params: pd.DataFrame):
         )
         plt.grid(alpha=0.3)
         plt.tight_layout()
-        plt.savefig(f"svi_vs_pysvi_{model_name}_comparison.pdf", bbox_inches="tight")
-        plt.clf()
+        _save_figure_pdf_png(plt.gcf(), f"svi_vs_pysvi_{model_name}_comparison")
+        plt.close()
 
     out = pd.DataFrame(rows)
     if out.empty:
@@ -415,43 +453,56 @@ def compare_vs_svi_py(prep: pd.DataFrame, params: pd.DataFrame):
     print(out.groupby("model")[["rmse_ours", "rmse_pysvi", "delta_rmse"]].mean())
 
 
-def plot_ivsmile(option_quotes_contracts):
-    option_quotes_contracts = option_quotes_contracts.sort_values("strike")
-    option_quotes_contracts["log_moneyness"] = np.log(
-        option_quotes_contracts["spot"] * np.exp(0.05 * option_quotes_contracts["T"])/option_quotes_contracts["strike"]
+def plot_ivsmile(
+    option_quotes_contracts: pd.DataFrame,
+    *,
+    quote_timestamp: pd.Timestamp | str | None = None,
+) -> pd.DataFrame:
+    """
+    Plot a single cross-section: one quote ``timestamp`` (default: latest in frame).
+
+    Returns the filtered dataframe so downstream steps (spline, SVI) use the same snapshot.
+    """
+    sliced, ts = _snapshot_at_quote_time(option_quotes_contracts, quote_timestamp=quote_timestamp)
+    sliced = sliced.sort_values("strike")
+    sliced["log_moneyness"] = np.log(
+        sliced["spot"] * np.exp(0.05 * sliced["T"]) / sliced["strike"]
     )
-    option_quotes_contracts = option_quotes_contracts[option_quotes_contracts["log_moneyness"].abs() < 0.2]
+    sliced = sliced.loc[sliced["log_moneyness"].abs() < 0.2].copy()
+
+    ts_str = pd.Timestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+    print(f"plot_ivsmile: using single quote snapshot at {ts_str} ({len(sliced)} points after ATM filter).")
 
     fig, ax = plt.subplots(figsize=(9, 5.5))
     ax.plot(
-        option_quotes_contracts["strike"],
-        option_quotes_contracts["iv"],
+        sliced["strike"],
+        sliced["iv"],
         ".",
-        alpha=0.35,
-        markersize=4,
+        alpha=0.45,
+        markersize=5,
         label="Inverted IV (Black–Scholes, r = 5%, mid price)",
     )
     ax.plot(
-        option_quotes_contracts["strike"],
-        option_quotes_contracts["implied_vol"],
+        sliced["strike"],
+        sliced["implied_vol"],
         ".",
-        alpha=0.35,
-        markersize=4,
+        alpha=0.45,
+        markersize=5,
         label="Yahoo-reported implied volatility",
     )
     ax.set_xlabel("Strike price", fontsize=11)
     ax.set_ylabel("Implied volatility", fontsize=11)
     ax.set_title(
-        "Volatility smile near the money\n"
-        r"(filter: $\left|\log(K/F)\right| < 0.2$ on forward $F = S e^{rT}$)",
+        "Volatility smile near the money (single quote snapshot)\n"
+        rf"(quote time: {ts_str}; $\left|\log(K/F)\right| < 0.2$, $F = S e^{{rT}}$)",
         fontsize=12,
     )
     ax.grid(alpha=0.3)
     ax.legend(loc="best", framealpha=0.95)
     fig.tight_layout()
-    fig.savefig("iv_smile.pdf", bbox_inches="tight")
+    _save_figure_pdf_png(fig, "iv_smile")
     plt.close(fig)
-    return option_quotes_contracts
+    return sliced
 
 
 

@@ -1,11 +1,11 @@
 from datetime import datetime, timezone
-from decimal import Decimal, InvalidOperation
 
 import pandas as pd
 import yfinance as yf
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 
-from config.settings import DB_CONFIG, PIPELINE_CONFIG
+from option_pricing.src.data.ingestion.config import DB_CONFIG, PIPELINE_CONFIG
+from db_connect import db_engine
 
 
 def build_db_url() -> str:
@@ -269,8 +269,7 @@ def ingest_symbol(symbol: str, engine):
 
 
 def main():
-    db_url = build_db_url()
-    engine = create_engine(db_url, future=True)
+    engine = db_engine()
 
     for symbol in PIPELINE_CONFIG["symbols"]:
         ingest_symbol(symbol, engine)

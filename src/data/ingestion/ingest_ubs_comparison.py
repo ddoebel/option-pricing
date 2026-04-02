@@ -1,15 +1,13 @@
 from datetime import datetime, timedelta
 import pandas as pd
 import yfinance as yf
-from sqlalchemy import create_engine
+
+from db_connect import db_engine
 
 # --- CONFIG ---
 TICKERS = ["UBS", "^GSPC"]
 DAYS_BACK = 21  # ~3 weeks
 TABLE_NAME = "prices"
-
-DB_URI = "postgresql://quant_user:strong_password@localhost:5432/options_db"
-
 
 def fetch_data(tickers, start_date, end_date):
     data = yf.download(
@@ -64,7 +62,7 @@ def main():
     raw = fetch_data(TICKERS, start_date, end_date)
     df = transform_data(raw)
 
-    engine = create_engine(DB_URI)
+    engine = db_engine()
     load_to_postgres(df, engine)
 
     print("Ingestion complete.")

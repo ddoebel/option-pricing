@@ -179,3 +179,14 @@ python3 -m option_pricing.src.data.load_data
 ```bash
 cmake --build build --target docs
 ```
+## 📚 Further Analysis 
+
+A more detailed discussion of numerial stability, implied volatility inversion, and calibration challenges is available here 
+
+👉 [Project blog](https://notes.ddoebel.de/public-folder/Option-Pricing-Engine)
+
+This includes deeper analysis of:
+- implied volatility instability from raw market data
+- calibration challenges under noisy inputs
+- numerical experiments and diagnostics
+(see in particular [Observations and further analysis](https://notes.ddoebel.de/public-folder/Option-Pricing-Engine#-observations-and-further-analysis)) 

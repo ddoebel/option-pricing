@@ -1,0 +1,24 @@
+[build-system]
+requires = ["scikit-build-core>=0.5", "pybind11"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "qengine"
+version = "0.1.0"
+description = "Quant engine with C++ backend"
+authors = [{name = "David"}]
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "pandas",
+    "sqlalchemy",
+    "psycopg2-binary",
+    "yfinance",
+]
+
+[tool.scikit-build]
+# Keep separate from a local `cmake -B build` tree (different generators: Ninja vs Makefiles).
+build-dir       = "skbuild-build"
+cmake.version = ">=3.16"
+cmake.build-type      = "Release"
+cmake.define.BUILD_TESTING = "OFF"

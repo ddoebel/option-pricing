@@ -1,6 +1,100 @@
-# option_pricing
+# Option Pricing Engine with Market Data Pipeline 
+## 📌 Project Description
 
-C++/Python quantitative finance engine for option pricing, implied-volatility analysis, and market-data ingestion.
+This repository implements a **production-style quantitative valuation pipeline** for equity options, combining high-performance pricing models with a full data and calibration workflow.
+
+The system goes beyond a standalone pricer: it integrates **market data ingestion, structured storage, numerical pricing, and volatility surface calibration** into a single reproducible framework.
+### The goal of this project 
+
+The goal of this project is to serve as a **modular foundation for quantitative modeling and experimentation** in option pricing and financial time series.
+
+Rather than implementing a single model, the system is designed to support:
+
+- benchmarking different pricing approaches (analytical, simulation-based, and data-driven),
+- comparing numerical methods under realistic market data conditions,
+- and extending toward more advanced workflows such as statistical learning and model calibration.
+
+A key objective is to create an environment where **new ideas from research can be implemented, tested, and evaluated within a consistent pipeline**, rather than in isolated scripts or notebooks.
+
+This includes:
+
+- integrating alternative pricing methodologies into a shared framework,
+- analyzing model behavior across time and market regimes,
+- and building reproducible pipelines for both numerical and data-driven approaches.
+
+Ultimately, the project aims to bridge:
+- **theoretical models** (e.g. stochastic processes, volatility parameterizations),
+- **numerical methods** (simulation, calibration),
+- and **data-driven techniques** (time-series analysis, machine learning),
+
+within a single, extensible system. Moving closer to a production-grade pipeline. 
+### What the system does
+
+The system supports the following workflow:
+
+- Ingest listed option market data (Yahoo Finance)
+- Normalize and store it in a relational database (PostgreSQL)
+- Compute implied volatilities from observed prices
+- Calibrate parametric volatility surfaces (SVI)
+- Run pricing models (Black-Scholes, Monte Carlo)
+- Expose fast pricing routines via Python for analysis and research
+
+---
+This project aims to **unify these components into a coherent system**, with clear interfaces between:
+
+- **Data layer** (ingestion, storage, schema)
+- **Model layer** (C++ pricing engines)
+- **Analytics layer** (Python calibration and diagnostics)
+- **Execution layer** (reproducible pipelines)
+
+---
+
+### Technology choices
+
+The architecture deliberately combines multiple technologies, each chosen for a specific role:
+
+- **C++ (C++20)**  
+  Used for performance-critical pricing components (Monte Carlo, closed-form models) and clean domain modeling.
+
+- **Python**  
+  Used for orchestration, data processing, calibration (SVI), and rapid experimentation.
+
+- **pybind11**  
+  Bridges C++ and Python, enabling high-performance models to be used in flexible workflows.
+
+- **PostgreSQL + SQLAlchemy**  
+  Provides structured, queryable storage for market data and supports reproducible calibration pipelines.
+
+---
+
+### Key challenges addressed
+
+This project tackles several non-trivial challenges:
+
+- **Bridging performance and usability**  
+  Integrating a C++ pricing engine into a Python-driven research pipeline.
+
+- **Data consistency and reproducibility**  
+  Designing a schema and ingestion process that supports reliable downstream calibration.
+
+- **Implied volatility inversion and calibration**  
+  Implementing stable numerical inversion and robust SVI fitting under noisy market data.
+
+- **System design over isolated models**  
+  Ensuring that data, models, and workflows interact cleanly as a unified system.
+
+---
+
+### Future directions
+
+Planned improvements focus on moving further toward production-grade systems:
+
+- Arbitrage-free implied volatility surface construction
+- More robust calibration and smoothing techniques
+- Performance optimization (parallel Monte Carlo, batching)
+- Extension to additional data sources and APIs
+- Improved testing of end-to-end data and calibration pipelines
+- comparing classical stochastic models vs data-driven approaches for pricing or volatility forecasting
 
 ## What is included
 
@@ -63,17 +157,8 @@ python src/data/ingestion/ingest_yahoo_options.py
 
 `PIPELINE_SYMBOLS` in `.env` controls which symbols are ingested (comma-separated, e.g. `SPY,AAPL,QQQ`).
 
-## Security and publication notes
-
-- No credentials are stored in source code.
-- `.env` files are git-ignored; only `.env.example` is committed.
-- Before publishing, rotate any credentials that were ever committed in the past.
-- Prefer least-privilege DB users for runtime ingestion jobs.
-
 ## Generating C++ API docs
 
 ```bash
 cmake --build build --target docs
 ```
-
-Generated output goes to `docs/html/` and is ignored in version control.

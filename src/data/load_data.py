@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from option_pricing.src.data.ingestion.db_connect import db_engine
-from option_pricing.src.ImpliedVolatility.compute_vls import implied_vol
+from src.data.ingestion.db_connect import db_engine
+from src.ImpliedVolatility.compute_vls import implied_vol
 
 
 def _save_figure_pdf_png(fig: plt.Figure, stem: str, *, dpi: int = 200) -> None:
@@ -174,9 +174,9 @@ def calibrate_svi_surface(option_quotes_contracts: pd.DataFrame, r: float = 0.05
     """
     Fit SVI per expiry on ``iv`` from :func:`compute_iv` and plot diagnostics.
 
-    See :func:`option_pricing.src.ImpliedVolatility.svi.calibrate_from_option_frame`.
+    See :func:`src.ImpliedVolatility.svi.calibrate_from_option_frame`.
     """
-    from option_pricing.src.ImpliedVolatility.svi import calibrate_from_option_frame
+    from src.ImpliedVolatility.svi import calibrate_from_option_frame
 
     return calibrate_from_option_frame(option_quotes_contracts, r=r, **kwargs)
 
@@ -193,7 +193,7 @@ def plot_smoothed_svi_surface(prep: pd.DataFrame, params: pd.DataFrame, r: float
     - svi_smoothed_surface.pdf / .png
     - svi_calendar_violation_heatmap.pdf / .png
     """
-    from option_pricing.src.ImpliedVolatility.svi import (
+    from src.ImpliedVolatility.svi import (
         calendar_violation_matrix,
         smooth_svi_parameters,
     )
@@ -343,7 +343,7 @@ def compare_vs_svi_py(prep: pd.DataFrame, params: pd.DataFrame):
     - svi_vs_pysvi_<model>_comparison.pdf and .png for model in {svi, ssvi, essvi, jumpwings}
     - svi_vs_pysvi_metrics.csv
     """
-    from option_pricing.src.ImpliedVolatility.svi import SVIParams
+    from src.ImpliedVolatility.svi import SVIParams
     from pysvi import ArbitrageFreedom, get_model
 
     ok_params = params[params["success"]].copy()

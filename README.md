@@ -168,11 +168,11 @@ python src/data/ingestion/ingest_yahoo_options.py
 
 ### 6) Run the DB → calibration demo (`load_data`)
 
-From the parent directory of the `option_pricing` folder (so `import option_pricing` resolves), with `.env` exported as above:
+From the `option_pricing` folder, with `.env` exported as above:
 
 ```bash
-set -a && source option_pricing/.env && set +a
-python3 -m option_pricing.src.data.load_data
+set -a && source .env && set +a
+python3 -m src.data.load_data
 ```
 
 ## Generating C++ API docs

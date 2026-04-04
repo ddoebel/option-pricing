@@ -1,6 +1,6 @@
 import pandas as pd
 
-from option_pricing.src.data.ingestion.db_connect import db_engine
+from src.data.ingestion.db_connect import db_engine
 
 
 def fetch_underlyings() -> pd.DataFrame:

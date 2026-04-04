@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from option_pricing.src.data.ingestion.config.settings import get_db_config
+from src.data.ingestion.config.settings import get_db_config
 
 
 def build_db_url() -> str:

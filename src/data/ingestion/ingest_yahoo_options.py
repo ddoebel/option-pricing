@@ -4,7 +4,7 @@ import pandas as pd
 import yfinance as yf
 from sqlalchemy import text
 
-from option_pricing.src.data.ingestion.config import PIPELINE_CONFIG, get_db_config
+from src.data.ingestion.config import PIPELINE_CONFIG, get_db_config
 from db_connect import db_engine
 
 

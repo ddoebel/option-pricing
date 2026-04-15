@@ -3,6 +3,7 @@
 //
 
 #include <gtest/gtest.h>
+#include "BlackScholesClosedFormEngine.hpp"
 #include "BlackScholesProcess.hpp"
 #include "MonteCarloEngine.hpp"
 #include "Instrument.hpp"
@@ -50,4 +51,29 @@ TEST(BlackScholesProcess, ExpectedValue) {
 
     ASSERT_NEAR(callPrice, callGT, tol);
     ASSERT_NEAR(putPrice,  putGT,  tol);
+}
+
+TEST(BlackScholesClosedForm, MatchesReference) {
+    const double K = 100.0;
+    const double T = 1.0;
+
+    const MarketData marketData(
+        100.0,
+        std::make_shared<FlatYieldCurve>(0.01),
+        std::make_shared<FlatVolatilitySurface>(0.2));
+
+    auto processCall = std::make_unique<BlackScholesProcess>(marketData);
+    auto processPut = std::make_unique<BlackScholesProcess>(marketData);
+
+    auto analyticCall = std::make_unique<BlackScholesClosedFormEngine>(std::move(processCall));
+    auto analyticPut = std::make_unique<BlackScholesClosedFormEngine>(std::move(processPut));
+
+    Instrument callInstr(T, std::make_unique<CallPayoff>(K), std::move(analyticCall));
+    Instrument putInstr(T, std::make_unique<PutPayoff>(K), std::move(analyticPut));
+
+    const double callGT = 8.4333186901;
+    const double putGT = 7.4383020650;
+
+    ASSERT_NEAR(callInstr.price(), callGT, 1e-9);
+    ASSERT_NEAR(putInstr.price(), putGT, 1e-9);
 }

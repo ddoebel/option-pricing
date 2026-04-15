@@ -4,3 +4,28 @@ __pycache__/
 *.pyo
 
 .ipynb_checkpoints/
+
+# Built Python extension dropped next to qengine/__init__.py for local dev
+/qengine/*.so
+/qengine/*.dylib
+/qengine/__pycache__/
+
+/skbuild-build/
+
+/build/
+/.idea/
+**/__pycache__/
+/docs/html/
+/docs/latex/
+
+# Local reference tree (optional clone)
+/CPP-design-pattern-derivatives-pricing/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local tooling caches
+/.pycache/
+/.mplconfig/

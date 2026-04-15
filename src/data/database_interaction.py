@@ -1,13 +1,15 @@
-import psycopg2
+import pandas as pd
 
-conn = psycopg2.connect(
-    dbname="options_db",
-    user="quant_user",
-    password="strong_password",
-    host="144.91.73.49",
-    port="5432"
-)
+from option_pricing.src.data.ingestion.db_connect import db_engine
 
-cursor = conn.cursor()
-cursor.execute("SELECT * FROM underlyings;")
-print(cursor.fetchall())
+
+def fetch_underlyings() -> pd.DataFrame:
+    """
+    Fetch all entries from the underlyings table using configured DB credentials.
+    """
+    engine = db_engine()
+    return pd.read_sql("SELECT * FROM underlyings;", engine)
+
+
+if __name__ == "__main__":
+    print(fetch_underlyings())

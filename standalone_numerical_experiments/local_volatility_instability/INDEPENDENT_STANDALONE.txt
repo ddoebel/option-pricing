@@ -1,0 +1,6 @@
+This folder is intentionally self-contained.
+
+- No imports from the parent option_pricing package (no qengine, src/, cpp bindings).
+- Third-party dependencies: numpy, matplotlib (see requirements.txt).
+- Run: python run_experiment.py [--out lv_rmse.png]
+- Safe to copy elsewhere or run in isolation.

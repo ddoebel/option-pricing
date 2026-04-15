@@ -1,3 +1,10 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+.ipynb_checkpoints/
+
 # Built Python extension dropped next to qengine/__init__.py for local dev
 /qengine/*.so
 /qengine/*.dylib

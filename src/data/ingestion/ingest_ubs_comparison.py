@@ -2,10 +2,12 @@ from datetime import datetime, timedelta
 import pandas as pd
 import yfinance as yf
 from sqlalchemy import create_engine
+from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy import MetaData, Table
 
 # --- CONFIG ---
 TICKERS = ["UBS", "^GSPC"]
-DAYS_BACK = 21  # ~3 weeks
+DAYS_BACK = 31  # ~3 weeks
 TABLE_NAME = "prices"
 
 DB_URI = "postgresql://quant_user:strong_password@localhost:5432/options_db"
@@ -21,6 +23,11 @@ def fetch_data(tickers, start_date, end_date):
         progress=False
     )
     return data
+
+def get_asset_map(engine): 
+    query = "SELECT id, ticker FROM assets"
+    df = pd.read_sql(query, engine)
+    return dict(zip(df["ticker"], df["id"]))
 
 
 def transform_data(raw_data):
@@ -44,17 +51,37 @@ def transform_data(raw_data):
         df["return"] = df["close"].pct_change()
 
         frames.append(df)
-
     return pd.concat(frames, ignore_index=True)
 
 
 def load_to_postgres(df, engine):
-    df.to_sql(
-        TABLE_NAME,
-        engine,
-        if_exists="append",
-        index=False
-    )
+    asset_map = get_asset_map(engine)
+    df["asset_id"] = df["ticker"].map(asset_map)
+    df = df.drop(columns=["ticker"])
+
+    metadata = MetaData()
+    prices = Table(TABLE_NAME, metadata, autoload_with=engine)
+
+    with engine.begin() as conn:
+        for _, row in df.iterrows():
+            stmt = insert(prices).values({
+                "asset_id": row["asset_id"],
+                "date": row["date"],
+                "close": row["close"],
+                "volume": row["volume"],
+                "return": row["return"]
+            })
+
+            stmt = stmt.on_conflict_do_update(
+            index_elements=["asset_id", "date"],
+            set_={
+                "close": stmt.excluded.close,
+                "volume": stmt.excluded.volume,
+                "return": stmt.excluded["return"],  # important change
+            }
+        )
+
+            conn.execute(stmt)
 
 
 def main():

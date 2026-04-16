@@ -4,22 +4,22 @@ Standalone module for ENTSO-E ingestion and feature-store creation in `quant_db`
 
 ## Start here (customer-friendly)
 
-The fastest way to understand and demo this project is the notebook:
+The easiest way to understand this project is to start with the notebook:
 
-- **Primary walkthrough notebook:** `src/data_analysis/analyze_data.ipynb`
+- **Primary walkthrough notebook:** [analyze_data.ipynb](https://github.com/ddoebel/option-pricing/blob/main/electricity_price_predictor/src/data_analysis/analyze_data.ipynb)
 
-This notebook is the recommended entry point for business users, stakeholders, and new contributors because it shows the full flow in one place: data loading, feature preparation, model training, and evaluation outputs.
+It walks through the full pipeline in one place: loading data, building features, training a model, and checking results.
 
 ## Quick path
 
-1. Set up the environment (see `Setup` below).
-2. Build/populate the feature store (see `Build feature store` below).
-3. Open and run `src/data_analysis/analyze_data.ipynb` end-to-end.
+1. Set up the environment (see [Setup](#setup)).
+2. Build/populate the feature store (see [Build feature store](#build-feature-store)).
+3. Open and run [analyze_data.ipynb](https://github.com/ddoebel/option-pricing/blob/main/electricity_price_predictor/src/data_analysis/analyze_data.ipynb) end-to-end.
 
 ## Documentation
 
-- High-level architecture: `docs/architecture.md`
-- Detailed developer documentation (file-by-file + UML): `docs/developer_guide.md`
+- High-level architecture: [docs/architecture.md](https://github.com/ddoebel/option-pricing/blob/main/electricity_price_predictor/docs/architecture.md)
+- Detailed developer documentation (file-by-file + UML): [docs/developer_guide.md](https://github.com/ddoebel/option-pricing/blob/main/electricity_price_predictor/docs/developer_guide.md)
 
 ## What it builds
 

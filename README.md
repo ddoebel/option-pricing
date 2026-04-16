@@ -3,13 +3,13 @@
 
 ## Featured subproject: Electricity Price Predictor
 
-This repository now includes a prominently featured, mostly standalone energy analytics project in `electricity_price_predictor/`.
+I also built an electricity-pricing project inside this repo, and you can use it almost like a standalone project.
 
-- **Business-facing entry point:** `electricity_price_predictor/src/data_analysis/analyze_data.ipynb`
-- **Subproject docs:** `electricity_price_predictor/README.md`
-- **Use case:** ENTSO-E ingestion, feature engineering, and electricity price forecasting workflows
+- **Start here (main notebook):** [analyze_data.ipynb](https://github.com/ddoebel/option-pricing/blob/main/electricity_price_predictor/src/data_analysis/analyze_data.ipynb)
+- **Project guide:** [electricity_price_predictor README](https://github.com/ddoebel/option-pricing/blob/main/electricity_price_predictor/README.md)
+- **What it does:** ENTSO-E data ingestion, feature engineering, and electricity price prediction
 
-If your main interest is energy pricing, you can start directly in the notebook and treat the rest of this repository as optional supporting infrastructure.
+If you mainly care about energy forecasting, you can jump straight into the notebook and ignore the rest of the repo at first.
 ## 📌 Project Description
 
 This repository implements a **production-style quantitative valuation pipeline** for equity options, combining high-performance pricing models with a full data and calibration workflow.
@@ -111,7 +111,7 @@ Planned improvements focus on moving further toward production-grade systems:
 
 - `cpp/`: core C++ pricing library (Monte Carlo + Black-Scholes closed form), DB ingestion hooks, and pybind bindings.
 - `qengine/`: Python package exposing the native extension (`import qengine`).
-- `electricity_price_predictor/`: electricity market data pipeline and forecasting analysis (can be used as a mostly standalone module).
+- [`electricity_price_predictor/`](https://github.com/ddoebel/option-pricing/tree/main/electricity_price_predictor): electricity market data pipeline and forecasting analysis (works as a mostly standalone module).
 - `src/ImpliedVolatility/`: SVI calibration and implied-volatility tooling.
 - `src/data/`: data ingestion, SQL schema, and analytics helpers.
 - `tests/`: C++ unit tests (GoogleTest).

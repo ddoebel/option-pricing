@@ -2,6 +2,20 @@
 
 Standalone module for ENTSO-E ingestion and feature-store creation in `quant_db`.
 
+## Start here (customer-friendly)
+
+The fastest way to understand and demo this project is the notebook:
+
+- **Primary walkthrough notebook:** `src/data_analysis/analyze_data.ipynb`
+
+This notebook is the recommended entry point for business users, stakeholders, and new contributors because it shows the full flow in one place: data loading, feature preparation, model training, and evaluation outputs.
+
+## Quick path
+
+1. Set up the environment (see `Setup` below).
+2. Build/populate the feature store (see `Build feature store` below).
+3. Open and run `src/data_analysis/analyze_data.ipynb` end-to-end.
+
 ## Documentation
 
 - High-level architecture: `docs/architecture.md`

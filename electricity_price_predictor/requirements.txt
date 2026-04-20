@@ -2,3 +2,10 @@ entsoe-py
 pandas
 sqlalchemy
 psycopg2-binary
+# Benchmarking / models (optional for pipeline-only installs)
+numpy
+scikit-learn
+lightgbm
+pygam
+statsmodels
+torch
